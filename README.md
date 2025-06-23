@@ -1,5 +1,10 @@
 DevBuddyTinder Backend Application 💻    
 
 What i have build in DevBuddyTinder 👨‍💻
-1) Frontend 
-2) Backend
+1) Frontend  (React)
+2) Backend   (Node Js)
+<!-- This both are communicating with API -->
+
+
+
+
