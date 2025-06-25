@@ -1,30 +1,47 @@
 const express = require("express");
 const { adminAuth } = require("./middleware/middleware");
+const { userModel } = require("./model/user");
+const { DB } = require("./config/Databases");
 const app = express();
+app.use(express.json());
+app.post("/signup", async (req, res) => {
+  const userObj = {
+    firstName: "ganesh",
+    lastName: "prabhu",
+    password: "123456789",
+    age: "21",
+    gender: "male",
+  };
+  //   Creating new instance of userModel
+  const user = new userModel(userObj);
 
-app.use("/admin", adminAuth);
-
-const port = 3000;
-
-app.get("/admin/get-all-user", (req, res) => {
-  res.send("get all user");
+  try {
+    await user.save();
+    res.json({
+      message: "data save",
+      status: true,
+      userObj,
+    });
+  } catch (error) {
+    res.status(401).json({
+      message: "error to store data",
+    });
+  }
 });
 
-app.get("/admin/delete-all-user", (req, res) => {
-  res.send("delete all user");
-});
+console.log("Trying to connect to DB...");
+DB()
+  .then(() => {
+    console.log("DB is connected.");
+    app.listen(3000, () => {
+      console.log("server is running ");
+    });
+  })
+  .catch((err) => {
+    console.log("error in code DB ", err);
+    process.exit(1);
+  });
 
-app.get("/abc", (req, res) => {
-  res.send("getting information about user ");
-});
 
-app.get("/user", (req, res) => {
-  res.status(200).send("delete-user-data");
-});
-app.get("/user/:id", (req, res) => {
-  res.send(req.params.id);
-});
 
-app.listen(port, () => {
-  console.log("Server is running..");
-});
+  
