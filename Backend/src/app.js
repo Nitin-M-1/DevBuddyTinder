@@ -3,6 +3,7 @@ const { adminAuth } = require("./middleware/middleware");
 const { userModel } = require("./model/user");
 const { DB } = require("./config/Databases");
 const helmet = require("helmet");
+const validator = require("validator");
 
 const app = express();
 
@@ -138,6 +139,11 @@ app.patch("/update-user/:userId", async (req, res) => {
         console.log("---------------------->");
         throw new Error("skill length is greater then 5");
       }
+      if (key == "photURL") {
+        if (!validator.isURL(updateData.photURL)) {
+          throw new Error("invalid URL");
+        }
+      }
     });
     //
     const updatedUser = await userModel.findByIdAndUpdate(
@@ -167,8 +173,3 @@ DB()
     console.log("error in code DB ", err);
     process.exit(1);
   });
-
-// creating DB connection
-// create schema
-// create model
-// create new instance of this model
