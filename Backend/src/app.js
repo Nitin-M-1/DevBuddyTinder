@@ -29,7 +29,7 @@ app.post("/signup", async (req, res) => {
     });
   } catch (error) {
     res.status(401).json({
-      message: "error to store data",
+      message: error._message,
     });
   }
 });
@@ -58,6 +58,7 @@ app.get("/user-email", async (req, res) => {
   } catch (error) {
     res.status(401).send({
       message: "Error 404",
+      error,
     });
   }
 });
@@ -71,6 +72,7 @@ app.get("/single-user-by-id", async (req, res) => {
   } catch (error) {
     res.send({
       message: "error in code ",
+      error,
     });
   }
 });
@@ -83,7 +85,7 @@ app.get("/feed", async (req, res) => {
     const userData = await userModel.find();
     res.send(userData);
   } catch (error) {
-    res.send("error in code");
+    res.send("error in code", error);
   }
 });
 
@@ -109,12 +111,11 @@ app.delete("/delete-user-by-id", async (req, res) => {
   } catch (error) {
     res.json({
       message: "error",
+      error,
     });
   }
 });
-
 // update API
-
 app.patch("/update-user", async (req, res) => {
   try {
     const { userId, ...updateData } = req.body; // Destructure userId and get the rest as updateData
@@ -123,7 +124,7 @@ app.patch("/update-user", async (req, res) => {
     const updatedUser = await userModel.findByIdAndUpdate(
       userId,
       { $set: updateData },
-      { new: true }
+      { runValidators: true }
     );
 
     if (!updatedUser) {
@@ -132,8 +133,7 @@ app.patch("/update-user", async (req, res) => {
 
     res.status(200).send(updatedUser);
   } catch (err) {
-    console.error(err);
-    res.status(500).send({ message: "Error updating user" });
+    res.status(500).send({ message: err.message });
   }
 });
 

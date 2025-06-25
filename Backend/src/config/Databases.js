@@ -6,8 +6,12 @@ const mongoose = require("mongoose");
 
 const DB = () => {
   return mongoose.connect(
-    "mongodb+srv://keviljop9191:LQtPNYPWRkrJwx92@cluster0.zv9t0uv.mongodb.net/devtinder"
-  ); 
+    "mongodb+srv://keviljop9191:uKHN8uMfFPFoqlVK@cluster0.7jdzqk7.mongodb.net/devtinder",
+    {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    }
+  );
 };
 
 module.exports = { DB };
