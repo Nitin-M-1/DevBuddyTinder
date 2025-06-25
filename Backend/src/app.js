@@ -116,21 +116,38 @@ app.delete("/delete-user-by-id", async (req, res) => {
   }
 });
 // update API
-app.patch("/update-user", async (req, res) => {
+app.patch("/update-user/:userId", async (req, res) => {
   try {
-    const { userId, ...updateData } = req.body; // Destructure userId and get the rest as updateData
+    const userId = req.params?.userId;
+    const { ...updateData } = req.body; // Destructure userId and get the rest as updateData
     console.log(userId, updateData);
-
+    const ALLOWED_UPDATE = [
+      "photURL",
+      "gender",
+      "about",
+      "skill",
+      "age",
+      "password",
+    ];
+    // Validate checking is allowed or not
+    Object.keys(updateData).forEach((key) => {
+      if (!ALLOWED_UPDATE.includes(key)) {
+        throw new Error("Can't Update");
+      }
+      if (updateData?.skill.length > 5) {
+        console.log("---------------------->");
+        throw new Error("skill length is greater then 5");
+      }
+    });
+    //
     const updatedUser = await userModel.findByIdAndUpdate(
       userId,
       { $set: updateData },
       { runValidators: true }
     );
-
     if (!updatedUser) {
       return res.status(404).send({ message: "User not found" });
     }
-
     res.status(200).send(updatedUser);
   } catch (err) {
     res.status(500).send({ message: err.message });
