@@ -6,20 +6,14 @@ const helmet = require("helmet");
 
 const app = express();
 
-
-
-// every single time hit 
+// every single time hit
 app.use((req, res, next) => {
   console.log("Always runs");
   next();
 });
 
-
 app.use(express.json());
 app.use(helmet());
-
-
-
 
 //-----------------------------routes------------------------------
 app.post("/signup", async (req, res) => {
@@ -40,12 +34,47 @@ app.post("/signup", async (req, res) => {
   }
 });
 
+// get email id
 
+app.get("/user-email", async (req, res) => {
+  try {
+    const userModelData = await userModel
+      .findOne({
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+      })
+      .exec();
+    if (!userModelData) {
+      res.status(401).send({
+        message: "not found!.😢",
+        status: "❌user not found!❌",
+      });
+    }
+    res.send({
+      firstName: userModelData.firstName,
+      lastName: userModelData.lastName,
+      emailId: userModelData.emailId,
+    });
+  } catch (error) {
+    res.status(401).send({
+      message: "Error 404",
+    });
+  }
+});
 
+// get all users
+app.get("/feed", async (req, res) => {
+  // creating instance of db
+  try {
+    // sending Request to get all data
+    const userData = await userModel.find();
+    res.send(userData);
+  } catch (error) {
+    res.send("error in code");
+  }
+});
 
-
-
-// DB Connection 
+// DB Connection
 console.log("Trying to connect to DB...");
 DB()
   .then(() => {
