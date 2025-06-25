@@ -61,6 +61,19 @@ app.get("/user-email", async (req, res) => {
     });
   }
 });
+// get User By Id
+app.get("/single-user-by-id", async (req, res) => {
+  const userId = req.body.userId; // Should print your userId
+  try {
+    const userData = await userModel.findById(userId);
+    console.log(userData);
+    res.send(userData);
+  } catch (error) {
+    res.send({
+      message: "error in code ",
+    });
+  }
+});
 
 // get all users
 app.get("/feed", async (req, res) => {
@@ -71,6 +84,56 @@ app.get("/feed", async (req, res) => {
     res.send(userData);
   } catch (error) {
     res.send("error in code");
+  }
+});
+
+// delete User from the database base on ID
+
+app.delete("/delete-user-by-id", async (req, res) => {
+  try {
+    const userId = req.body.userId;
+    const dbUser = await userModel.deleteOne({ _id: userId });
+    console.log(dbUser);
+    if (!dbUser) {
+      // invalid User
+      res.send({
+        message: "invalid user",
+      });
+    }
+    res.json({
+      message: "user is deleted!.",
+      data: dbUser,
+    });
+
+    res.send(userId);
+  } catch (error) {
+    res.json({
+      message: "error",
+    });
+  }
+});
+
+// update API
+
+app.patch("/update-user", async (req, res) => {
+  try {
+    const { userId, ...updateData } = req.body; // Destructure userId and get the rest as updateData
+    console.log(userId, updateData);
+
+    const updatedUser = await userModel.findByIdAndUpdate(
+      userId,
+      { $set: updateData },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).send({ message: "User not found" });
+    }
+
+    res.status(200).send(updatedUser);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send({ message: "Error updating user" });
   }
 });
 
