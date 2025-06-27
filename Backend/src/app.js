@@ -6,7 +6,7 @@ const helmet = require("helmet");
 const validator = require("validator");
 const { validateSignUpData } = require("../utils/Validation");
 const bcrypt = require("bcryptjs");
-
+const cookieParser = require("cookie-parser");
 const app = express();
 
 // every single time hit
@@ -17,7 +17,7 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 app.use(helmet());
-
+app.use(cookieParser());
 //-----------------------------routes------------------------------
 app.post("/signup", async (req, res) => {
   // Use for registering new user
@@ -57,7 +57,7 @@ app.post("/login", async (req, res) => {
     const userModelData = await userModel.findOne({ emailId });
 
     // if (!userModelData) {
-    //   throw new Error("Invalid Credentials."); 
+    //   throw new Error("Invalid Credentials.");
     // }
 
     const isMatch = await bcrypt.compare(password, userModelData.password);
@@ -66,12 +66,24 @@ app.post("/login", async (req, res) => {
       throw new Error("Invalid Password Credentials.");
     }
 
-    res.send("Login SuccessFull!.");
+    res.cookie("token", "awdjhbawjdajwbdjbjabwjdb");
+
+    res.send("Login SuccessFull!.123");
   } catch (error) {
     res.status(500).send({
       message: error.message,
     });
   }
+});
+
+app.get("/profile", async (req, res) => {
+  const cookies = req.cookies;
+  if(!cookies.token)
+  {
+    res.send("Do see my profile")
+  }
+  res.send(cookies);
+
 });
 
 // get email id
