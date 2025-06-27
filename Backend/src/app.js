@@ -4,6 +4,8 @@ const { userModel } = require("./model/user");
 const { DB } = require("./config/Databases");
 const helmet = require("helmet");
 const validator = require("validator");
+const { validateSignUpData } = require("../utils/Validation");
+const bcrypt = require("bcryptjs");
 
 const app = express();
 
@@ -18,10 +20,15 @@ app.use(helmet());
 
 //-----------------------------routes------------------------------
 app.post("/signup", async (req, res) => {
-  const userObj = req.body;
-  //   Creating new instance of userModel
-  const user = new userModel(userObj);
+  // Use for registering new user
+
+  // Validation
+
   try {
+    const userObj = req.body;
+    validateSignUpData(req);
+    userObj.password = await bcrypt.hash(userObj.password, 10);
+    const user = new userModel(userObj);
     await user.save();
     res.json({
       message: "data save",
@@ -30,13 +37,44 @@ app.post("/signup", async (req, res) => {
     });
   } catch (error) {
     res.status(401).json({
-      message: error._message,
+      message: error.message,
+    });
+  }
+});
+
+// Login-API
+
+app.post("/login", async (req, res) => {
+  // take user input
+
+  try {
+    const { emailId, password } = req.body;
+
+    // if (!emailId || !password) throw new Error("Invalid Email Id or Password");
+    if (!validator.isEmail(emailId))
+      throw new Error("Invalid Email Id or Credentials");
+
+    const userModelData = await userModel.findOne({ emailId });
+
+    // if (!userModelData) {
+    //   throw new Error("Invalid Credentials."); 
+    // }
+
+    const isMatch = await bcrypt.compare(password, userModelData.password);
+
+    if (!isMatch) {
+      throw new Error("Invalid Password Credentials.");
+    }
+
+    res.send("Login SuccessFull!.");
+  } catch (error) {
+    res.status(500).send({
+      message: error.message,
     });
   }
 });
 
 // get email id
-
 app.get("/user-email", async (req, res) => {
   try {
     const userModelData = await userModel
@@ -45,12 +83,14 @@ app.get("/user-email", async (req, res) => {
         lastName: req.body.lastName,
       })
       .exec();
+
     if (!userModelData) {
       res.status(401).send({
         message: "not found!.😢",
         status: "❌user not found!❌",
       });
     }
+
     res.send({
       firstName: userModelData.firstName,
       lastName: userModelData.lastName,
@@ -63,6 +103,7 @@ app.get("/user-email", async (req, res) => {
     });
   }
 });
+
 // get User By Id
 app.get("/single-user-by-id", async (req, res) => {
   const userId = req.body.userId; // Should print your userId
