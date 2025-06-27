@@ -8,7 +8,7 @@ const { validateSignUpData } = require("../utils/Validation");
 const bcrypt = require("bcryptjs");
 const cookieParser = require("cookie-parser");
 const app = express();
-
+var jwt = require("jsonwebtoken");
 // every single time hit
 app.use((req, res, next) => {
   console.log("Always runs");
@@ -66,8 +66,12 @@ app.post("/login", async (req, res) => {
       throw new Error("Invalid Password Credentials.");
     }
 
-    res.cookie("token", "awdjhbawjdajwbdjbjabwjdb");
-
+    const token = await jwt.sign({ _id: userModelData._id }, "Dev@Tinder#129", {
+      expiresIn: "10s",
+    });
+    
+    console.log(token);
+    res.cookie("token", token);
     res.send("Login SuccessFull!.123");
   } catch (error) {
     res.status(500).send({
@@ -78,12 +82,19 @@ app.post("/login", async (req, res) => {
 
 app.get("/profile", async (req, res) => {
   const cookies = req.cookies;
-  if(!cookies.token)
-  {
-    res.send("Do see my profile")
-  }
-  res.send(cookies);
+  try {
+    if (!cookies.token) throw new Error("Invalid Credentials");
 
+    const decodedMessage = await jwt.verify(cookies.token, "Dev@Tinder#129");
+    const { _id } = decodedMessage;
+
+    const user = await userModel.findById(_id);
+    if (!user) throw new Error("Invalid User please Login Again!.");
+
+    res.send(user);
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
 });
 
 // get email id
