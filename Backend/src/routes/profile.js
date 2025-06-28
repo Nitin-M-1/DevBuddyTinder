@@ -1,9 +1,9 @@
 const express = require("express");
 const { adminAuth, userAuth } = require("../middleware/middleware");
 const { userModel } = require("../model/user");
-
+const bcrypt = require("bcrypt");
 const profileRouter = express.Router();
-
+const validator = require("validator");
 // View Profile
 profileRouter.get("/view", userAuth, async (req, res) => {
   try {
@@ -13,7 +13,6 @@ profileRouter.get("/view", userAuth, async (req, res) => {
   }
 });
 // profile Edit
-
 profileRouter.patch("/edit", userAuth, async (req, res) => {
   try {
     const updateData = {};
@@ -44,6 +43,37 @@ profileRouter.patch("/edit", userAuth, async (req, res) => {
     res.send(user);
   } catch (error) {
     res.send(error.message);
+  }
+});
+
+// Forget-Password
+profileRouter.patch("/forget-password", userAuth, async (req, res) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+    if (!oldPassword || !newPassword)
+      throw new Error("invalid Password please Check ");
+
+    const isOldPasswordMatch = await bcrypt.compare(
+      oldPassword,
+      req.user.password
+    );
+    if (!isOldPasswordMatch) throw new Error("invalid old password ");
+    if (!validator.isStrongPassword(newPassword))
+      throw new Error("new Password is not strong");
+
+    const newHashPassword = await userModel.hashPassword(newPassword);
+    const user = await userModel.findByIdAndUpdate(
+      req.user,
+      { password: newHashPassword },
+      {
+        new: true,
+      }
+    );
+    res.send(user);
+  } catch (error) {
+    res.status(500).send({
+      message: error.message,
+    });
   }
 });
 
