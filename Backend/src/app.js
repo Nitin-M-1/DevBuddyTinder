@@ -1,14 +1,12 @@
 const express = require("express");
-const { adminAuth, userAuth } = require("./middleware/middleware");
-const { userModel } = require("./model/user");
 const { DB } = require("./config/Databases");
 const helmet = require("helmet");
-const validator = require("validator");
-const { validateSignUpData } = require("../utils/Validation");
-const bcrypt = require("bcryptjs");
 const cookieParser = require("cookie-parser");
 const app = express();
-var jwt = require("jsonwebtoken");
+const authRouter = require("./routes/auth");
+const profileRouter = require("./routes/profile");
+const requestRouter = require("./routes/request");
+
 // every single time hit
 app.use((req, res, next) => {
   console.log("Always runs");
@@ -18,79 +16,37 @@ app.use((req, res, next) => {
 app.use(express.json());
 app.use(helmet());
 app.use(cookieParser());
+app.use("/", authRouter);
+app.use("/profile", profileRouter);
+app.use("/request", requestRouter);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //-----------------------------routes------------------------------
-app.post("/signup", async (req, res) => {
-  // Use for registering new user
 
-  // Validation
 
-  try {
-    const userObj = req.body;
-    validateSignUpData(req);
-    userObj.password = await bcrypt.hash(userObj.password, 10);
-    const user = new userModel(userObj);
-    await user.save();
-    res.json({
-      message: "data save",
-      status: true,
-      userObj,
-    });
-  } catch (error) {
-    res.status(401).json({
-      message: error.message,
-    });
-  }
-});
+// app.get("/profile", userAuth, async (req, res) => {
+//   try {
+//     res.send(req.user);
+//   } catch (error) {
+//     res.status(500).send(error.message);
+//   }
+// });
 
-// Login-API
-
-app.post("/login", async (req, res) => {
-  // take user input
-
-  try {
-    const { emailId, password } = req.body;
-
-    // if (!emailId || !password) throw new Error("Invalid Email Id or Password");
-    if (!validator.isEmail(emailId))
-      throw new Error("Invalid Email Id or Credentials");
-
-    const userModelData = await userModel.findOne({ emailId });
-
-    // if (!userModelData) {
-    //   throw new Error("Invalid Credentials.");
-    // }
-
-    const isMatch = await bcrypt.compare(password, userModelData.password);
-
-    if (!isMatch) {
-      throw new Error("Invalid Password Credentials.");
-    }
-
-    const token = await jwt.sign({ _id: userModelData._id }, "Dev@Tinder#129", {
-      expiresIn: "20m",
-    });
-
-    console.log(token);
-    res.cookie("token", token);
-    res.send("Login SuccessFull!.123");
-  } catch (error) {
-    res.status(500).send({
-      message: error.message,
-    });
-  }
-});
-
-app.get("/profile", userAuth, async (req, res) => {
-  try {
-    res.send(req.user);
-  } catch (error) {
-    res.status(500).send(error.message);
-  }
-});
-
-app.post("/sendConnectionRequest", userAuth, async (req, res) => {
-  res.send("Important Data send "+ req.user)
-});
+// app.post("/sendConnectionRequest", userAuth, async (req, res) => {
+//   res.send("Important Data send " + req.user);
+// });
 
 // // get email id
 // app.get("/user-email", async (req, res) => {
@@ -123,7 +79,7 @@ app.post("/sendConnectionRequest", userAuth, async (req, res) => {
 // });
 
 // // get User By Id
-// app.get("/single-user-by-id", async (req, res) => {
+// app.get("/single-user-by-id", async (req,  res) => {
 //   const userId = req.body.userId; // Should print your userId
 //   try {
 //     const userData = await userModel.findById(userId);
