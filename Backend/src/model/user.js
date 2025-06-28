@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 var validator = require("validator");
+const bcrypt = require("bcryptjs");
+
 const userSchema = mongoose.Schema(
   {
     firstName: {
@@ -15,7 +17,7 @@ const userSchema = mongoose.Schema(
       maxlength: 20,
     },
 
-    password: { type: String, required: true, minlength: 7   },
+    password: { type: String, required: true, minlength: 7 },
 
     age: { type: Number, required: true, min: 18, max: 70 },
 
@@ -46,8 +48,9 @@ const userSchema = mongoose.Schema(
   },
   { timestamps: true }
 );
-
-// Creating Model
+userSchema.statics.hashPassword = async function (password) {
+  return await bcrypt.hash(password, 10);
+};
 const userModel = mongoose.model("User", userSchema);
 
 module.exports = { userModel };

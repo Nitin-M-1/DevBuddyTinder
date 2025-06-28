@@ -1,11 +1,12 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const { userModel } = require("../model/user");
- const authRouter = express.Router();
+const authRouter = express.Router();
 const { validateSignUpData } = require("../../utils/Validation");
 const cookieParser = require("cookie-parser");
 var jwt = require("jsonwebtoken");
 const validator = require("validator");
+const { adminAuth, userAuth } = require("../middleware/middleware");
 
 authRouter.post("/signup", async (req, res) => {
   // Use for registering new user
@@ -13,7 +14,7 @@ authRouter.post("/signup", async (req, res) => {
   try {
     const userObj = req.body;
     validateSignUpData(req);
-    userObj.password = await bcrypt.hash(userObj.password, 10);
+    userObj.password = await userModel.hashPassword(userObj.password);
     const user = new userModel(userObj);
     await user.save();
     res.json({
@@ -61,6 +62,19 @@ authRouter.post("/login", async (req, res) => {
     res.status(500).send({
       message: error.message,
     });
+  }
+});
+
+authRouter.post("/logout", userAuth, async (req, res) => {
+  try {
+    if (!req.user) throw new Error("Jump To Login Page ");
+    res
+      .cookie("token", null, {
+        expires: new Date(0),
+      })
+      .send("user logout Successfully✅ ");
+  } catch (error) {
+    res.send(error.message);
   }
 });
 
