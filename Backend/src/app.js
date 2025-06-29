@@ -6,7 +6,7 @@ const app = express();
 const authRouter = require("./routes/auth");
 const profileRouter = require("./routes/profile");
 const requestRouter = require("./routes/request");
-
+const userRouter = require("./routes/user");
 // every single time hit
 app.use((req, res, next) => {
   console.log("Always runs");
@@ -19,22 +19,9 @@ app.use(cookieParser());
 app.use("/", authRouter);
 app.use("/profile", profileRouter);
 app.use("/request", requestRouter);
-
-
-
-
-
-
-
-
-
-
-
-
-
+app.use("/user", userRouter);
 
 //-----------------------------routes------------------------------
-
 
 // app.get("/profile", userAuth, async (req, res) => {
 //   try {

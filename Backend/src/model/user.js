@@ -9,12 +9,14 @@ const userSchema = mongoose.Schema(
       required: [true, "First name is required"],
       minlength: 2,
       maxlength: 10,
+      index: true,
     },
     lastName: {
       type: String,
       required: [true, "last name is required"],
       minlength: 2,
       maxlength: 20,
+      index: true,
     },
 
     password: { type: String, required: true, minlength: 7 },
@@ -48,6 +50,7 @@ const userSchema = mongoose.Schema(
   },
   { timestamps: true }
 );
+userSchema.index({ firstName: 1, lastName: 1 });
 userSchema.statics.hashPassword = async function (password) {
   return await bcrypt.hash(password, 10);
 };

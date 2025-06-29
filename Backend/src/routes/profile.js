@@ -46,7 +46,7 @@ profileRouter.patch("/edit", userAuth, async (req, res) => {
   }
 });
 
-// Forget-Password
+// update-password! - api
 profileRouter.patch("/forget-password", userAuth, async (req, res) => {
   try {
     const { oldPassword, newPassword } = req.body;
@@ -60,7 +60,6 @@ profileRouter.patch("/forget-password", userAuth, async (req, res) => {
     if (!isOldPasswordMatch) throw new Error("invalid old password ");
     if (!validator.isStrongPassword(newPassword))
       throw new Error("new Password is not strong");
-
     const newHashPassword = await userModel.hashPassword(newPassword);
     const user = await userModel.findByIdAndUpdate(
       req.user,
@@ -78,3 +77,10 @@ profileRouter.patch("/forget-password", userAuth, async (req, res) => {
 });
 
 module.exports = profileRouter;
+
+
+
+
+
+
+
